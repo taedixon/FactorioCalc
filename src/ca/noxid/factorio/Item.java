@@ -1,15 +1,14 @@
 package ca.noxid.factorio;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by noxid on 08/08/17.
  */
 public class Item {
 
-	private final String id;
+	public final String id;
 	private final String name;
 	public final int tier;
 	private List<Recipe> recipes;
@@ -27,22 +26,31 @@ public class Item {
 		recipes.add(r);
 	}
 
-	public void getIngredients(HashMap<Item, Float> components, float amount) {
+	public void getIngredients(Map<Item, Product> products, float amount) {
 		// figure out trees n shit later. for now lets just assume the first
 		// recipe is the one we want.
 		if (recipes.size() >= 1) {
 			Recipe r = recipes.get(0);
-			r.getIngredients(components, amount);
+			r.getIngredients(products, amount);
 		}
 	}
 
 	public void finalizeRecipes(HashMap<String, Item> itemMap) {
-		for (Recipe r : recipes) {
-			r.populateIngredients(itemMap);
-		}
+		recipes.forEach(r -> r.populateIngredients(itemMap));
 	}
 
 	public String getName() {
 		return name;
+	}
+
+	public Set<String> getFactoryGroups() {
+		return recipes.stream().map(r -> r.mfgType).collect(Collectors.toSet());
+	}
+
+	public float getTimeToMake() {
+		if (recipes.size() > 0) {
+			return recipes.get(0).time;
+		}
+		return 0;
 	}
 }

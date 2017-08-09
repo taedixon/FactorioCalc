@@ -9,8 +9,8 @@ import java.util.Map;
 public class Recipe {
 
 	private final String name;
-	private final String mfgType;
-	private final float time;
+	public final String mfgType;
+	public final float time;
 	private final float nProduct;
 	private final Map<String, Float> ingredientIDs;
 	private Map<Item, Float> ingredients;
@@ -37,17 +37,18 @@ public class Recipe {
 		}
 	}
 
-	public void getIngredients(HashMap<Item, Float> components, float amount) {
+	public void getIngredients(Map<Item, Product> products, float amount) {
 		for (Item i : ingredients.keySet()) {
-			if (components.get(i) == null) {
-				components.put(i, 0f);
+			Product curProd = products.get(i);
+			if (curProd == null) {
+				curProd = new Product(i, 0, false);
+				products.put(i, curProd);
 			}
-			float curAmt = components.get(i);
 			float requiredForRecipe = ingredients.get(i) / nProduct * amount;
 //			System.out.println(String.format("I need %.1f %s to make %.1f %s", requiredForRecipe, i.getName(), amount, name));
-			components.put(i, curAmt + requiredForRecipe);
+			curProd.addToProduction(requiredForRecipe);
 //			System.out.println(String.format("I now have %.1f %s", components.get(i), i.getName()));
-			i.getIngredients(components, requiredForRecipe);
+			i.getIngredients(products, requiredForRecipe);
 		}
 	}
 }

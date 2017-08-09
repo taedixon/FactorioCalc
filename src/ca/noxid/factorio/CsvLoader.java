@@ -44,7 +44,7 @@ public class CsvLoader {
 				//skip empty lines
 				continue;
 			}
-			System.out.println(String.format("Loaded item: %s", id));
+//			System.out.println(String.format("Loaded item: %s", id));
 			Item curItem = rv.get(id);
 			if (curItem == null) {
 				// currently the items will simply have the name of the first recipe

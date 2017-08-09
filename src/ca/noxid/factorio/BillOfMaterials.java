@@ -8,31 +8,43 @@ import java.util.stream.Collectors;
  */
 public class BillOfMaterials {
 
-	Item product;
-	float productCount;
-	HashMap<Item, Float> components;
+	Map<Item, Product> products;
 
-	BillOfMaterials(Item targetItem, float amount) {
-		components = new HashMap<>();
-		product = targetItem;
-		productCount = amount;
-		targetItem.getIngredients(components, amount);
+	BillOfMaterials() {
+		products = new HashMap<>();
 	}
 
-	@Override
-	public String toString() {
+	public void addProduct(Item item, float amount) {
+		Product prod;
+		if (products.containsKey(item)) {
+			prod = products.get(item);
+		} else {
+			prod = new Product(item, amount, true);
+		}
+		products.put(item, prod);
+		item.getIngredients(products, amount);
+	}
+
+	public void setFactories(Collection<Factory> factories) {
+		products.values().forEach(p -> p.setFactories(factories));
+	}
+
+	public String computeResults(float time) {
 		StringBuilder sb = new StringBuilder();
-		Map<Integer, List<Item>> tiers = components.keySet().stream()
-				.collect(Collectors.groupingBy(item -> item.tier));
+		Map<Integer, List<Product>> tiers = products.values().stream()
+				.filter(p -> !p.primaryProduct)
+				.collect(Collectors.groupingBy(prod -> prod.getItem().tier));
 		List<Integer> sortedTiers = new ArrayList<>(tiers.keySet());
 		Collections.sort(sortedTiers);
 		for (Integer tier : sortedTiers) {
 			sb.append(String.format("\n===TIER %d===\n", tier));
-			for (Item i : tiers.get(tier)) {
-				sb.append(String.format("%s: %.2f\n", i.getName(), components.get(i)));
+			for (Product p : tiers.get(tier)) {
+				sb.append(p.getResults(time));
 			}
 		}
-		sb.append(String.format("\nResult: %.1f %s", productCount, product.getName()));
+		sb.append("\n===FINAL PRODUCTS===\n");
+		products.values().stream().filter(p -> p.primaryProduct)
+				.forEach(p -> sb.append(p.getResults(time)));
 		return sb.toString();
 	}
 }
